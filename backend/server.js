@@ -3,7 +3,12 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const db = require('./src/config/db');
+
 const authRoutes = require('./src/routes/authRoutes');
+const kycRoutes = require('./src/routes/kycRoutes');
+const subscriptionRoutes = require('./src/routes/subscriptionRoutes');
+const researchRoutes = require('./src/routes/researchRoutes');
+const educationRoutes = require('./src/routes/educationRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +23,10 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/kyc', kycRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/research', researchRoutes);
+app.use('/api/education', educationRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
