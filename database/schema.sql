@@ -1,0 +1,105 @@
+CREATE DATABASE IF NOT EXISTS infiglobe_db;
+USE infiglobe_db;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(150) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  phone VARCHAR(30) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(30) DEFAULT 'client',
+  kyc_status VARCHAR(30) DEFAULT 'not_started',
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS kyc_records (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  status VARCHAR(30) DEFAULT 'in_progress',
+  document_type VARCHAR(60),
+  document_url VARCHAR(255),
+  verified_by VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS user_devices (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  device_name VARCHAR(100),
+  device_token VARCHAR(255),
+  platform VARCHAR(30),
+  is_registered BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS subscription_plans (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  validity_days INT NOT NULL,
+  description TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS user_subscriptions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  plan_id INT NOT NULL,
+  status VARCHAR(30) DEFAULT 'active',
+  started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (plan_id) REFERENCES subscription_plans(id)
+);
+
+CREATE TABLE IF NOT EXISTS research_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  service_type VARCHAR(50) NOT NULL,
+  content TEXT,
+  status VARCHAR(30) DEFAULT 'draft',
+  version_number INT DEFAULT 1,
+  created_by INT NOT NULL,
+  approved_by INT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  FOREIGN KEY (approved_by) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS education_courses (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  price DECIMAL(10,2) DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS user_progress (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  course_id INT NOT NULL,
+  progress_percent INT DEFAULT 0,
+  status VARCHAR(30) DEFAULT 'in_progress',
+  last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (course_id) REFERENCES education_courses(id)
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  action VARCHAR(120) NOT NULL,
+  entity_type VARCHAR(80),
+  entity_id INT,
+  old_value TEXT,
+  new_value TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
